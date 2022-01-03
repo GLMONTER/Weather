@@ -2,57 +2,62 @@ package com.example.weather
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.location.Criteria
-import android.location.Location
-import android.location.LocationListener
+import android.location.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import android.os.Bundle
 import android.widget.TextView
 
+//for http requests
 import com.android.volley.Request
-import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 
+//for json parsing
 import org.json.JSONException
-
-import android.location.LocationManager
-import androidx.core.app.ActivityCompat
-import android.util.Log
-import kotlinx.coroutines.delay
-
 
 class MainActivity : AppCompatActivity()
 {
     override fun onCreate(savedInstanceState: Bundle?)
     {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //get the textbox
-        val textView = findViewById<TextView>(R.id.textView)
-        var Longitude = 0.0
-        var Latitude = 0.0
+
+        //get the textboxes
+        val locationTextBox = findViewById<TextView>(R.id.locationText)
+        val conditionsTextBox = findViewById<TextView>(R.id.conditionsText)
+
+        //global storage for location data
+        var Longitude : Double
+        var Latitude : Double
 
         //define the listener for location updates
          val locationListener: LocationListener = object : LocationListener
          {
             override fun onLocationChanged(location: Location)
             {
+
                 Longitude = location.longitude
                 Latitude = location.latitude
-
+                var cityName : String
+                var geoCoder = Geocoder(this@MainActivity)
+                cityName = geoCoder.getFromLocation(Latitude, Longitude, 1)[0].locality
+                locationTextBox.text = cityName
 
                 // Instantiate the RequestQueue.
                 val queue = Volley.newRequestQueue(this@MainActivity)
                 val url = "https://api.openweathermap.org/data/2.5/weather?units=imperial&lat=" + Latitude.toString() + "&lon=" + Longitude.toString() + "&appid=926af17a444e5fd61c274302e03d6d66"
-                var responseString = ""
-// Request a string response from the provided URL.
+                // Request a string response from the provided URL.
                 val request =
                     JsonObjectRequest(Request.Method.GET, url, null, { response ->
                         try {
-                            textView.text = response.getJSONObject("main").getString("temp")
+                           // textView.text = response.getJSONObject("main").getString("temp")
+                            var formatString = response.getJSONArray("weather").getJSONObject(0).getString("description").split(" ").joinToString(" ") { it.replaceFirstChar { it.uppercase() } }.trimEnd();
+
+                            conditionsTextBox.text = formatString
                         } catch (e: JSONException) {
-                            textView.text = "failed"
+                        //    textView.text = "failed"
                             e.printStackTrace()
                         }
                     }, { error -> error.printStackTrace() })
