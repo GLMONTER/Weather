@@ -15,6 +15,7 @@ import com.android.volley.toolbox.Volley
 
 //for json parsing
 import org.json.JSONException
+import org.w3c.dom.Text
 
 class MainActivity : AppCompatActivity()
 {
@@ -27,6 +28,15 @@ class MainActivity : AppCompatActivity()
         //get the textboxes
         val locationTextBox = findViewById<TextView>(R.id.locationText)
         val conditionsTextBox = findViewById<TextView>(R.id.conditionsText)
+        val temperatureTextBox = findViewById<TextView>(R.id.temperatureText)
+        val feelsTextBox = findViewById<TextView>(R.id.feelText)
+        val lowTextBox = findViewById<TextView>(R.id.lowText)
+        val highTextBox = findViewById<TextView>(R.id.highText)
+        val windTextBox = findViewById<TextView>(R.id.windText)
+        val humidTextBox = findViewById<TextView>(R.id.humidText)
+
+
+
 
         //global storage for location data
         var Longitude : Double
@@ -52,10 +62,19 @@ class MainActivity : AppCompatActivity()
                 val request =
                     JsonObjectRequest(Request.Method.GET, url, null, { response ->
                         try {
-                           // textView.text = response.getJSONObject("main").getString("temp")
+
                             var formatString = response.getJSONArray("weather").getJSONObject(0).getString("description").split(" ").joinToString(" ") { it.replaceFirstChar { it.uppercase() } }.trimEnd();
 
                             conditionsTextBox.text = formatString
+                            temperatureTextBox.text = "Temp(F) : " + response.getJSONObject("main").getString("temp")
+                            feelsTextBox.text = "Feels like (F) : " + response.getJSONObject("main").getString("feels_like")
+                            lowTextBox.text = "Low (F) : " + response.getJSONObject("main").getString("temp_min")
+                            highTextBox.text = "High (F) : " + response.getJSONObject("main").getString("temp_max")
+                            windTextBox.text = "Wind Speed (MPH) : " + response.getJSONObject("wind").getString("speed")
+                            humidTextBox.text = "Humidity (%) : " + response.getJSONObject("main").getString("humidity")
+
+
+
                         } catch (e: JSONException) {
                         //    textView.text = "failed"
                             e.printStackTrace()
