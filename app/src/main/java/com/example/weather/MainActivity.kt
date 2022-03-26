@@ -6,16 +6,20 @@ import android.location.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 
 //for http requests
 import com.android.volley.Request
+import com.android.volley.VolleyLog.TAG
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 
 //for json parsing
 import org.json.JSONException
 import org.w3c.dom.Text
+import java.lang.Error
+import java.lang.RuntimeException
 
 class MainActivity : AppCompatActivity()
 {
@@ -35,25 +39,27 @@ class MainActivity : AppCompatActivity()
         val windTextBox = findViewById<TextView>(R.id.windText)
         val humidTextBox = findViewById<TextView>(R.id.humidText)
 
-
-
-
         //global storage for location data
         var Longitude : Double
         var Latitude : Double
-
         //define the listener for location updates
          val locationListener: LocationListener = object : LocationListener
          {
             override fun onLocationChanged(location: Location)
             {
-
                 Longitude = location.longitude
                 Latitude = location.latitude
                 var cityName : String
                 var geoCoder = Geocoder(this@MainActivity)
-                cityName = geoCoder.getFromLocation(Latitude, Longitude, 1)[0].locality
-                locationTextBox.text = cityName
+                try {
+                    cityName = geoCoder.getFromLocation(Latitude, Longitude, 1)[0].locality
+
+                    locationTextBox.text = cityName;
+                }
+                catch (e: RuntimeException)
+                {
+                    Log.e(TAG, e.message.toString());
+                }
 
                 // Instantiate the RequestQueue.
                 val queue = Volley.newRequestQueue(this@MainActivity)
@@ -109,9 +115,16 @@ class MainActivity : AppCompatActivity()
         //retrieve the best from the provider list
         val bestProvider: String = locationManager.getBestProvider(crit, true) as String
         //request a location update and wake the gps
-        locationManager.requestLocationUpdates(bestProvider, 0,0.0f,  locationListener)
+        try
+        {
+           // locationManager.requestLocationUpdates(bestProvider, 0,0.0f,  locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0.0f, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0.0f, locationListener);
+        }
+        catch (e: RuntimeException)
+        {
+            Log.e(TAG, e.message.toString());
+        }
         //locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-
-
     }
 }
